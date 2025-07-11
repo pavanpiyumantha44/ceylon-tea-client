@@ -1,13 +1,12 @@
 // src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
-import ProtectedRoute from '../components/protectedRoute';
 import LoginPage from '../pages/login';
 import Dashboard from '../components/Dashboard';
 import Inventory from '../components/Inventory';
 import Workers from '../components/Workers';
 import Production from '../components/Production';
 import Summary from '../components/Summary';
-
+import ProtectedRoute from '../components/ProtectedRoute'
 
 const AppRoutes = () => {
   return (
