@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Image, Eye, Download, Sparkles, RefreshCw, FileImage, X, CheckCircle, AlertCircle, Camera, Zap } from 'lucide-react';
 import {analyzeImage} from '../services/AIAnalaysisService';
+
 import axios from 'axios';
 
 const Solution = () => {
@@ -60,8 +61,9 @@ const Solution = () => {
       formData.append('image', selectedImage);
       formData.append('lang', selectedLanguage);
       
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
       // Send image to backend
-      const response = await axios.post('http://localhost:8000/api/ai/analyzeImage', formData, {
+      const response = await axios.post(`${baseUrl}/ai/analyzeImage`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
