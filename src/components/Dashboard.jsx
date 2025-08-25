@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useDispatch,useSelector } from 'react-redux';
+import React, { useState, useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { 
   Menu, 
   X, 
@@ -25,6 +25,32 @@ import {
   CheckCircle,
   AlertCircle,
   Outdent,
+  ChevronDown,
+  ChevronRight,
+  Monitor,
+  FileText,
+  UserPlus,
+  UserCheck,
+  BoxIcon,
+  Warehouse,
+  TrendingDown,
+  PlusCircle,
+  MinusCircle,
+  Route,
+  MapPinIcon,
+  BarChart,
+  LineChart,
+  UserCog,
+  Shield,
+  Database,
+  ConciergeBell,
+  LogOut,
+  Ratio,
+  User,
+  ScrollText,
+  NotebookText,
+  Lightbulb,
+  ListOrdered,
 } from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { logout } from '../app/auth/authSlice';
@@ -33,24 +59,143 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [expandedMenus, setExpandedMenus] = useState({});
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
-  const {user} = useSelector((state)=>state.auth);
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  const handleLogout = ()=>{
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
-  }
+  };
+
+  const handleProfileClick = () => {
+    setActiveTab('profile');
+    setUserDropdownOpen(false);
+    navigate('/profile');
+  };
+
+  const toggleUserDropdown = () => {
+    setUserDropdownOpen(!userDropdownOpen);
+  };
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'production', label: 'Production', icon: Factory },
-    { id: 'inventory', label: 'Inventory', icon: Package },
-    { id: 'workers', label: 'Workers', icon: Users },
-    { id: 'distribution', label: 'Distribution', icon: Truck },
-    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { 
+      id: 'dashboard', 
+      label: 'Dashboard', 
+      icon: Home,
+      subItems: [
+        { id: '', label: 'Overview', icon: Monitor },
+        { id: 'reports', label: 'Reports', icon: FileText },
+        { id: 'analytics-dash', label: 'Analytics', icon: BarChart3 }
+      ]
+    },
+    { 
+      id: 'production', 
+      label: 'Production', 
+      icon: Factory,
+      subItems: [
+        { id: 'production-overview', label: 'Overview', icon: Monitor },
+        { id: 'quality-control', label: 'Quality Control', icon: CheckCircle },
+        { id: 'production-reports', label: 'Reports', icon: FileText }
+      ]
+    },
+    { 
+      id: 'inventory', 
+      label: 'Inventory', 
+      icon: Package,
+      subItems: [
+        { id: 'inventory', label: 'Stock Levels', icon: BoxIcon },
+        { id: 'warehouse', label: 'Warehouse', icon: Warehouse },
+        { id: 'inventory-in', label: 'Stock In', icon: PlusCircle },
+        { id: 'inventory-out', label: 'Stock Out', icon: MinusCircle }
+      ]
+    },
+    { 
+      id: 'solution', 
+      label: 'Solutions', 
+      icon: Lightbulb,
+      subItems: [
+        { id: 'solution', label: 'AI Solutions', icon: Ratio},
+      ]
+    },
+    { 
+      id: 'workers', 
+      label: 'Workers', 
+      icon: Users,
+      subItems: [
+        { id: 'workers', label: 'All Workers', icon: Users },
+        { id: 'teams', label: 'Teams', icon: UserPlus },
+        { id: 'attendance', label: 'Attendance', icon: UserCheck },
+        { id: 'payroll', label: 'Payroll', icon: DollarSign }
+      ]
+    },
+    { 
+      id: 'request', 
+      label: 'Requests', 
+      icon: ConciergeBell,
+      subItems: [
+        { id: 'requests', label: 'All Requests', icon: ScrollText},
+      ]
+    },
+     { 
+      id: 'tasks', 
+      label: 'Tasks', 
+      icon: NotebookText,
+      subItems: [
+        { id: 'tasks', label: 'All Tasks', icon: ListOrdered},
+      ]
+    },
+    { 
+      id: 'distribution', 
+      label: 'Distribution', 
+      icon: Truck,
+      subItems: [
+        { id: 'orders', label: 'Orders', icon: Package },
+        { id: 'shipping', label: 'Shipping', icon: Truck },
+        { id: 'routes', label: 'Routes', icon: Route },
+        { id: 'tracking', label: 'Tracking', icon: MapPinIcon }
+      ]
+    },
+    { 
+      id: 'analytics', 
+      label: 'Analytics', 
+      icon: TrendingUp,
+      subItems: [
+        { id: 'sales-analytics', label: 'Sales', icon: BarChart },
+        { id: 'production-analytics', label: 'Production', icon: LineChart },
+        { id: 'financial', label: 'Financial', icon: DollarSign },
+        { id: 'trends', label: 'Trends', icon: TrendingUp }
+      ]
+    },
+    { 
+      id: 'settings', 
+      label: 'Settings', 
+      icon: Settings,
+      subItems: [
+        { id: 'profile', label: 'Profile', icon: UserCog },
+        { id: 'security', label: 'Security', icon: Shield },
+        { id: 'system', label: 'System', icon: Database },
+        { id: 'preferences', label: 'Preferences', icon: Settings }
+      ]
+    },
   ];
 
   // Handle menu item click - close sidebar on mobile
@@ -62,13 +207,30 @@ const Dashboard = () => {
     }
   };
 
+  // Toggle dropdown menu
+  const toggleDropdown = (menuId) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [menuId]: !prev[menuId]
+    }));
+  };
+
+  // Handle sub-item click
+  const handleSubItemClick = (parentId, subItemId) => {
+    setActiveTab(subItemId);
+    // Close sidebar on mobile when sub-item is clicked
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:relative lg:transform-none ${
+      <div className={`fixed inset-y-0 left-0 z-40 bg-white shadow-lg transform transition-all duration-300 ease-in-out lg:relative lg:transform-none overflow-hidden ${
         sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'
-      } ${sidebarExpanded ? 'lg:w-64' : 'lg:w-16'}`}>
-        <div className={`flex items-center h-16 border-b border-gray-200 ${sidebarExpanded ? 'justify-between px-6' : 'justify-center px-3'}`}>
+      } ${sidebarExpanded ? 'lg:w-64' : 'lg:w-20'}`}>
+        <div className={`flex items-center h-16 border-b border-gray-200 ${sidebarExpanded ? 'justify-between px-6' : 'justify-center px-4'}`}>
           <div className="flex items-center space-x-2">
             <Leaf className="h-8 w-8 text-green-600" />
             {sidebarExpanded && <span className="text-xl font-bold text-gray-800">CeylonTea</span>}
@@ -89,30 +251,79 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <nav className="mt-6 px-3">
+        <nav className={`mt-6 px-4 max-h-[calc(100vh-4rem)] ${sidebarExpanded ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isExpanded = expandedMenus[item.id];
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            
             return (
-              <div key={item.id} className="relative group">
-                <Link
-                  to={`${item.id !== "dashboard" ? item.id : ""}`}
-                  className={`w-full flex items-center py-3 mb-1 text-left rounded-lg transition-colors duration-200 ${
-                    sidebarExpanded ? 'px-3' : 'px-2 justify-center'
+              <div key={item.id} className="relative group mb-1">
+                {/* Main Menu Item */}
+                <button
+                  onClick={() => hasSubItems ? toggleDropdown(item.id) : handleMenuItemClick(item.id)}
+                  className={`w-full flex items-center py-3 text-left rounded-lg transition-colors duration-200 ${
+                    sidebarExpanded ? 'px-3' : 'px-3 justify-center'
                   } ${
                     activeTab === item.id 
                       ? 'bg-green-50 text-green-700 border-r-4 border-green-600' 
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
-                  onClick={() => handleMenuItemClick(item.id)}
                 >
-                  <Icon className={`h-5 w-5 ${sidebarExpanded ? 'mr-3' : ''}`} />
-                  {sidebarExpanded && <span>{item.label}</span>}
-                </Link>
+                  <Icon className={`h-5 w-5 flex-shrink-0 ${sidebarExpanded ? 'mr-3' : ''}`} />
+                  {sidebarExpanded && (
+                    <>
+                      <span className="flex-1">{item.label}</span>
+                      {hasSubItems && (
+                        <div className="ml-2">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                {hasSubItems && isExpanded && sidebarExpanded && (
+                  <div className="mt-1 ml-4 space-y-1">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <Link
+                          key={subItem.id}
+                          to={`${subItem.id}`}
+                          className={`flex items-center py-2 px-3 rounded-lg transition-colors duration-200 ${
+                            activeTab === subItem.id
+                              ? 'bg-green-100 text-green-700 border-l-2 border-green-500'
+                              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                          }`}
+                          onClick={() => handleSubItemClick(item.id, subItem.id)}
+                        >
+                          <SubIcon className="h-4 w-4 mr-2" />
+                          <span className="text-sm">{subItem.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
                 
                 {/* Tooltip for collapsed sidebar */}
                 {!sidebarExpanded && (
                   <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                     {item.label}
+                    {hasSubItems && (
+                      <div className="mt-1 border-t border-gray-600 pt-1">
+                        {item.subItems.map((subItem, index) => (
+                          <div key={subItem.id} className="text-xs text-gray-300">
+                            {subItem.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -153,14 +364,44 @@ const Dashboard = () => {
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
-              <button className="relative p-2 text-gray-500 hover:text-gray-700" onClick={handleLogout}>
+              <button className="relative p-2 text-gray-500 hover:text-gray-700">
                 <Bell className="h-6 w-6" />
                 <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
               </button>
-              <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">A</span>
+              
+              {/* User Avatar with Dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={toggleUserDropdown}
+                  className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-200"
+                >
+                  <span className="text-white text-sm font-medium">A</span>
+                </button>
+                
+                {/* Dropdown Menu */}
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Profile
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-               <div className="h-8 w-10 flex items-center justify-center">
+              
+              <div className="h-8 w-10 flex items-center justify-center">
                 <span className="text-black text-sm font-medium">{user?.role}</span>
               </div>
             </div>

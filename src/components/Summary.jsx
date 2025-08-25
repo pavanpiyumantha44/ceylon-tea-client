@@ -22,11 +22,27 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  Cloud,
+  CloudRain,
+  Sun,
+  CloudSnow,
+  Wind,
+  Droplets,
+  Eye,
+  Thermometer,
+  Gauge,
+  Sunrise,
+  Sunset,
+  CloudDrizzle,
+  Zap
 } from "lucide-react";
 import { useEffect } from "react";
 import { ToastContainer, toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import { getWeatherData } from "../services/weatherService";
 
 const Summary = () => {
+  const { user } = useSelector((state) => state.auth);
   const stats = [
     {
       title: "Daily Production",
@@ -103,14 +119,45 @@ const Summary = () => {
     { month: "May", production: 55000, target: 60000 },
     { month: "Jun", production: 67000, target: 65000 },
   ];
+
+  // Sample weather data - you can replace this with real data later
+  const weatherData = {
+    location: "Panwila, Sri Lanka",
+    current: {
+      temperature: 28,
+      condition: "Partly Cloudy",
+      humidity: 75,
+      windSpeed: 12,
+      pressure: 1013,
+      visibility: 8,
+      uvIndex: 6,
+      sunrise: "06:15",
+      sunset: "18:25"
+    },
+    forecast: [
+      { day: "Today", high: 30, low: 24, condition: "Partly Cloudy", icon: Cloud },
+      { day: "Tomorrow", high: 29, low: 23, condition: "Light Rain", icon: CloudRain },
+      { day: "Wednesday", high: 27, low: 22, condition: "Rainy", icon: CloudRain },
+      { day: "Thursday", high: 31, low: 25, condition: "Sunny", icon: Sun },
+      { day: "Friday", high: 28, low: 23, condition: "Cloudy", icon: Cloud }
+    ]
+  };
+
   const showAlert = ()=>{
-     toast.success('Hey 👋!', {
+     toast.info(`Hey ${user.firstName} ${user.lastName} 👋! Welcome Back`, {
       position: 'top-center',
     });
   }
+
+  const fetchWeather = async()=>{
+    const res = await getWeatherData();
+    console.log(res.data);
+  }
   useEffect(()=>{
+    //fetchWeather();
     showAlert();
   },[])
+
   return (
     <div className="space-y-6">
        <ToastContainer autoClose={2000} />
@@ -223,41 +270,109 @@ const Summary = () => {
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Weather Section */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Recent Activity
-          </h3>
-          <div className="space-y-4">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3">
-                <div
-                  className={`mt-1 p-1 rounded-full ${
-                    activity.status === "success"
-                      ? "bg-green-100"
-                      : activity.status === "warning"
-                      ? "bg-yellow-100"
-                      : "bg-blue-100"
-                  }`}
-                >
-                  {activity.status === "success" ? (
-                    <CheckCircle className="h-3 w-3 text-green-600" />
-                  ) : activity.status === "warning" ? (
-                    <AlertCircle className="h-3 w-3 text-yellow-600" />
-                  ) : (
-                    <Activity className="h-3 w-3 text-blue-600" />
-                  )}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">Weather Conditions</h3>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <MapPin className="h-4 w-4" />
+              <span>{weatherData.location}</span>
+            </div>
+          </div>
+          <div className="bg-white p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Current Weather */}
+              <div className="space-y-4">
+                <div className="text-center lg:text-left">
+                  <div className="flex items-center justify-center lg:justify-start space-x-3 mb-2">
+                    <Cloud className="h-8 w-8 text-blue-500" />
+                    <div>
+                      <p className="text-3xl font-bold text-gray-800">{weatherData.current.temperature}°C</p>
+                      <p className="text-sm text-gray-600">{weatherData.current.condition}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-800">{activity.action}</p>
-                  <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+
+                {/* Weather Details Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Droplets className="h-4 w-4 text-blue-500" />
+                      <span className="text-xs text-gray-600">Humidity</span>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800">{weatherData.current.humidity}%</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Wind className="h-4 w-4 text-green-500" />
+                      <span className="text-xs text-gray-600">Wind Speed</span>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800">{weatherData.current.windSpeed} km/h</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Gauge className="h-4 w-4 text-purple-500" />
+                      <span className="text-xs text-gray-600">Pressure</span>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800">{weatherData.current.pressure} hPa</p>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Eye className="h-4 w-4 text-gray-500" />
+                      <span className="text-xs text-gray-600">Visibility</span>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800">{weatherData.current.visibility} km</p>
+                  </div>
+                </div>
+
+                {/* Sun Times */}
+                <div className="flex md:block justify-center items-center lg:block bg-gradient-to-r from-orange-50 to-yellow-50 p-3 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Sunrise className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm text-gray-600">Sunrise</span>
+                    <span className="text-sm font-semibold text-gray-800">{weatherData.current.sunrise}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Sunset className="h-4 w-4 text-orange-600" />
+                    <span className="text-sm text-gray-600">Sunset</span>
+                    <span className="text-sm font-semibold text-gray-800">{weatherData.current.sunset}</span>
+                  </div>
                 </div>
               </div>
-            ))}
+
+              {/* 5-Day Forecast */}
+              <div className="space-y-3">
+                <h4 className="text-md font-semibold text-gray-800 mb-3">5-Day Forecast</h4>
+                <div className="space-y-2">
+                  {weatherData.forecast.map((day, index) => {
+                    const Icon = day.icon;
+                    return (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center space-x-3">
+                          <Icon className={`h-5 w-5 ${
+                            day.condition.includes('Rain') ? 'text-blue-500' : 
+                            day.condition.includes('Sunny') ? 'text-yellow-500' : 
+                            'text-gray-500'
+                          }`} />
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{day.day}</p>
+                            <p className="text-xs text-gray-600">{day.condition}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-gray-800">{day.high}°</p>
+                          <p className="text-xs text-gray-500">{day.low}°</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
-          <button className="w-full mt-4 text-sm text-green-600 hover:text-green-700 font-medium">
-            View all activities
-          </button>
         </div>
       </div>
 

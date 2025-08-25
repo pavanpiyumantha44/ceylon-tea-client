@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users,
   Phone,
@@ -9,23 +9,24 @@ import {
   X,
   Save
 } from "lucide-react";
+import { addPerson, getRoles } from "../services/workerService";
 
 const WorkerDataEntryForm = () => {
   const [formData, setFormData] = useState({
     workerId: '',
-    name: '',
-    department: '',
-    shift: '',
-    contact: '',
+    firstName: '',
+    lastName: '',
+    roleId: '',
+    nicNumber: '',
+    phone: '',
     address: '',
-    emergencyContact: '',
-    joinDate: '',
-    salary: '',
-    notes: ''
+    email: '',
+    dob: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [roles,setRoles] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -37,30 +38,37 @@ const WorkerDataEntryForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      //console.log(formData);
+       setIsSubmitting(true);
     
-    setIsSubmitting(false);
-    setShowSuccess(true);
-    
-    // Reset form after 2 seconds
-    setTimeout(() => {
-      setShowSuccess(false);
-      setFormData({
-        workerId: '',
-        name: '',
-        department: '',
-        shift: '',
-        contact: '',
-        address: '',
-        emergencyContact: '',
-        joinDate: '',
-        salary: '',
-        notes: ''
-      });
-    }, 2000);
+        // Simulate API call
+       const response = await addPerson(formData);
+       console.log(response)
+        
+        setIsSubmitting(false);
+        setShowSuccess(true);
+        
+        // Reset form after 2 seconds
+        // setTimeout(() => {
+        //   setShowSuccess(false);
+        //   setFormData({
+        //     workerId: '',
+        //     name: '',
+        //     department: '',
+        //     shift: '',
+        //     contact: '',
+        //     address: '',
+        //     emergencyContact: '',
+        //     joinDate: '',
+        //     salary: '',
+        //     notes: ''
+        //   });
+        // }, 2000);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleCancel = () => {
@@ -76,6 +84,19 @@ const WorkerDataEntryForm = () => {
 
     });
   };
+
+  const getUserRoles = async()=>{
+    try {
+      const response = await getRoles();
+      setRoles(response.data.roles)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(()=>{
+    getUserRoles();
+  },[])
 
   if (showSuccess) {
     return (
@@ -128,7 +149,7 @@ const WorkerDataEntryForm = () => {
                 <input
                   type="text"
                   name="firstName"
-                  value={formData.workerId}
+                  value={formData.firstName}
                   onChange={handleInputChange}
                   placeholder="e.g., W007"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -143,7 +164,7 @@ const WorkerDataEntryForm = () => {
                 <input
                   type="text"
                   name="lastName"
-                  value={formData.name}
+                  value={formData.lastName}
                   onChange={handleInputChange}
                   placeholder="e.g., John Doe"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -156,21 +177,21 @@ const WorkerDataEntryForm = () => {
                 </label>
                 <input
                   type="text"
-                  name="lastName"
-                  value={formData.name}
+                  name="nicNumber"
+                  value={formData.nicNumber}
                   onChange={handleInputChange}
-                  placeholder="e.g., John Doe"
+                  placeholder="e.g., 99785786v"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />
               </div>
-                <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Gender
                 </label>
                 <select
                   name="gender"
-                  value={formData.department}
+                  value={formData.gender}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
@@ -180,105 +201,48 @@ const WorkerDataEntryForm = () => {
                   <option value="F">Female</option>
                 </select>
               </div>
-            </div>
-          </div>
-
-          {/* Work Details */}
-          <div className="space-y-4">
-            <h3 className="text-md font-medium text-gray-800 flex items-center space-x-2">
-              <Briefcase className="h-4 w-4" />
-              <span>Work Details</span>
-            </h3>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Department *
-                </label>
-                <select
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Department</option>
-                  <option value="Plucking">Plucking</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Packaging">Packaging</option>
-                  <option value="Quality Control">Quality Control</option>
-                  <option value="Transportation">Transportation</option>
-                  <option value="Administration">Administration</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Shift *
-                </label>
-                <select
-                  name="shift"
-                  value={formData.shift}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Shift</option>
-                  <option value="Morning">Morning (6:00 AM - 2:00 PM)</option>
-                  <option value="Day">Day (8:00 AM - 5:00 PM)</option>
-                  <option value="Evening">Evening (2:00 PM - 10:00 PM)</option>
-                  <option value="Night">Night (10:00 PM - 6:00 AM)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Join Date *
+                  Date of Birth *
                 </label>
                 <input
                   type="date"
-                  name="joinDate"
-                  value={formData.joinDate}
+                  name="dob"
+                  value={formData.dob}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />
               </div>
-              
-              <div>
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Monthly Salary (LKR)
+                  Role *
                 </label>
-                <input
-                  type="number"
-                  name="salary"
-                  value={formData.salary}
+                <select
+                  name="roleId"
+                  value={formData.roleId}
                   onChange={handleInputChange}
-                  placeholder="e.g., 45000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h3 className="text-md font-medium text-gray-800 flex items-center space-x-2">
-              <Phone className="h-4 w-4" />
-              <span>Contact Information</span>
-            </h3>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  required
+                >
+                <option value="">Select Role</option>
+                {
+                  roles && roles.map((role,key) => (
+                    <option key={key} value={role.roleId}>
+                      {role.userRole}
+                    </option>
+                  ))
+                }
+                </select>
+              </div>  
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number *
                 </label>
                 <input
                   type="tel"
-                  name="contact"
-                  value={formData.contact}
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleInputChange}
                   placeholder="+94 77 123 4567"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -288,21 +252,25 @@ const WorkerDataEntryForm = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Emergency Contact
+                  Email Address
                 </label>
                 <input
-                  type="tel"
-                  name="emergencyContact"
-                  value={formData.emergencyContact}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="+94 71 987 6543"
+                  placeholder="abc@example.com"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
-              </div>
+              </div>              
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
+          {/* Contact Information */}
+          <div className="space-y-4">
+            
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Address
                 </label>
@@ -311,25 +279,11 @@ const WorkerDataEntryForm = () => {
                   value={formData.address}
                   onChange={handleInputChange}
                   placeholder="Enter full address"
-                  rows={3}
+                  rows={2}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Additional Notes
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  placeholder="Any additional information about the worker"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+            </div>         
           </div>
 
           {/* Form Actions */}
@@ -345,6 +299,7 @@ const WorkerDataEntryForm = () => {
             <button
               type="submit"
               disabled={isSubmitting}
+              onClick={handleSubmit}
               className={`px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 ${
                 isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
               }`}

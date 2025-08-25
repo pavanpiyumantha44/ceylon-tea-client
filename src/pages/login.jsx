@@ -6,11 +6,13 @@ import { setCredentials } from '../app/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { login } from '../services/authService';
+import { ClipLoader, PulseLoader } from "react-spinners";
 
 export default function TeaFactoryLogin() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  let [loading, setLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,26 +27,30 @@ export default function TeaFactoryLogin() {
     });
   };
 
-  const handleSubmit = async(e) => {
-    e.preventDefault();
-    try {
-      const response = await login(formData);
-      if(response.status === 200){
-        console.log(response.data)
-        const {person,token} = response.data;
-        dispatch(setCredentials({user:person,token:token}))
-        navigate('/dashboard');
-      }
-    } catch (error) {
-       toast.error(error.response.data.message, {
-        style: {
-              backgroundColor: "#DC2626",
-              color: "#fff"
-        },
-        position: 'top-center',
-    });
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true)
+  try {
+    const response = await login(formData);
+
+    const { person, token } = response.data;
+    if (response.data.success && token && person) {
+      dispatch(setCredentials({ user: person, token }));
+      navigate('/dashboard');
+      setLoading(false)
     }
-  };
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Login failed", {
+      style: {
+        backgroundColor: "#DC2626",
+        color: "#fff"
+      },
+      position: 'top-center',
+    });
+    setLoading(false)
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -191,7 +197,17 @@ export default function TeaFactoryLogin() {
                   onClick={handleSubmit}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:scale-105"
                 >
-                  Sign In
+                  {loading? <PulseLoader
+                      color="#ffffff"
+                      loading={loading}
+                      cssOverride={{
+                        display: "block",
+                        margin: "0 auto",
+                        borderColor: "#c7c7c7",
+                      }}
+                      size={10}
+                    /> : <span>Sign In</span>
+                  }
                 </button>
               </div>
             </div>

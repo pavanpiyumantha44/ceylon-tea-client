@@ -7,6 +7,13 @@ import Workers from '../components/Workers';
 import Production from '../components/Production';
 import Summary from '../components/Summary';
 import ProtectedRoute from '../components/ProtectedRoute'
+import Teams from '../components/Teams';
+import Solution from '../components/Solution';
+import ViewTeam from '../components/ViewTeam';
+import Requests from '../components/Requests';
+import CreateRequest from '../components/CreateRequest';
+import Tasks from '../components/Tasks';
+import Attendance from '../components/Attendance';
 
 const AppRoutes = () => {
   return (
@@ -25,8 +32,16 @@ const AppRoutes = () => {
       >
         <Route index element={<Summary />} />
         <Route path="production" element={<Production />} />
+        <Route path="inventory" element={<Inventory/>}/>
+        <Route path="solution" element={<Solution />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="workers" element={<Workers/>} />
+        <Route path="attendance" element={<Attendance/>}/>
+        <Route path="teams" element={<Teams/>} />
+        <Route path="viewteam/:id" element={<ViewTeam/>}/>
+        <Route path="requests" element={<Requests/>}/>
+        <Route path="newRequest" element={<CreateRequest/>}/>
+        <Route path="tasks" element={<Tasks/>}/>
       </Route>
 
       {/* Catch-all */}
