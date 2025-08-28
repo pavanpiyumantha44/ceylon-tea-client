@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, Image, Eye, Download, Sparkles, RefreshCw, FileImage, X, CheckCircle, AlertCircle, Camera, Zap } from 'lucide-react';
-import {analyzeImage} from '../services/AIAnalaysisService';
+import {analyzeImage} from '../../services/AIAnalaysisService';
 
 import axios from 'axios';
 

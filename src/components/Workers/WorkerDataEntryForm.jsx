@@ -9,7 +9,7 @@ import {
   X,
   Save
 } from "lucide-react";
-import { addPerson, getRoles } from "../services/workerService";
+import { addPerson, getRoles } from "../../services/workerService";
 
 const WorkerDataEntryForm = () => {
   const [formData, setFormData] = useState({

@@ -26,7 +26,7 @@ import {
   X
 } from "lucide-react";
 import { Link } from 'react-router-dom';
-import Report from './Report';
+import Report from '../Reports/Report';
 
 const Requests = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -465,9 +465,9 @@ const Requests = () => {
             </div>
             
             <div className="flex items-center space-x-3">
-              <Link to={'/dashboard/newRequest'} className="flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">
+              <Link to={'/dashboard/newTask'} className="flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium">
                 <Plus className="h-4 w-4 mr-2" />
-                New Request
+                New Task
               </Link>
               <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
                 <Download className="h-4 w-4 mr-2" />

@@ -30,7 +30,7 @@ import {
   Save,
   AlertTriangle
 } from "lucide-react";
-import { addTeamMember, deleteTeamMember, getTeam, getTeamMembersInfo, updateTeam, workersWithoutTeams } from '../services/teamSlice';
+import { addTeamMember, deleteTeamMember, getTeam, getTeamMembersInfo, updateTeam, workersWithoutTeams } from '../../services/teamSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import { PropagateLoader } from "react-spinners";
 

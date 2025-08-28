@@ -2,18 +2,21 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../pages/login';
 import Dashboard from '../components/Dashboard';
-import Inventory from '../components/Inventory';
-import Workers from '../components/Workers';
-import Production from '../components/Production';
+import Inventory from '../components/Inventory/Inventory';
+import Workers from '../components/Workers/Workers';
+import Production from '../components/Production/Production';
 import Summary from '../components/Summary';
 import ProtectedRoute from '../components/ProtectedRoute'
-import Teams from '../components/Teams';
-import Solution from '../components/Solution';
-import ViewTeam from '../components/ViewTeam';
-import Requests from '../components/Requests';
-import CreateRequest from '../components/CreateRequest';
-import Tasks from '../components/Tasks';
-import Attendance from '../components/Attendance';
+import Teams from '../components/Workers/Teams';
+import Solution from '../components/Solution/Solution';
+import ViewTeam from '../components/Workers/ViewTeam';
+import Tasks from '../components/Task/Tasks';
+import Attendance from '../components/Attendance/Attendance';
+import Place from '../components/Place/Place';
+import ViewPlace from '../components/Place/ViewPlace';
+import CreateTask from '../components/Task/CreateTask';
+import EditProduct from '../components/Inventory/EditProduct';
+import StockTransactions from '../components/Inventory/StockTransactions';
 
 const AppRoutes = () => {
   return (
@@ -35,12 +38,15 @@ const AppRoutes = () => {
         <Route path="inventory" element={<Inventory/>}/>
         <Route path="solution" element={<Solution />} />
         <Route path="inventory" element={<Inventory />} />
+        <Route path="stockTransactions" element={<StockTransactions />} />
+        <Route path="editProduct/:id" element={<EditProduct />} />
         <Route path="workers" element={<Workers/>} />
         <Route path="attendance" element={<Attendance/>}/>
+        <Route path="place" element={<Place/>}/>
+        <Route path="viewplace/:id" element={<ViewPlace/>}/>
         <Route path="teams" element={<Teams/>} />
         <Route path="viewteam/:id" element={<ViewTeam/>}/>
-        <Route path="requests" element={<Requests/>}/>
-        <Route path="newRequest" element={<CreateRequest/>}/>
+        <Route path="newTask" element={<CreateTask/>}/>
         <Route path="tasks" element={<Tasks/>}/>
       </Route>
 

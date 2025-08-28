@@ -25,7 +25,7 @@ import {
   Home
 } from "lucide-react";
 import WorkerDataEntryForm from './WorkerDataEntryForm';
-import { allWorkers, deleteWorker } from "../services/workerService";
+import { allWorkers, deleteWorker } from "../../services/workerService";
 import { ClipLoader, HashLoader, PropagateLoader, PulseLoader } from "react-spinners";
 import { ToastContainer, toast } from 'react-toastify';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   Save,
@@ -6,59 +6,63 @@ import {
   Trash2,
   Calendar,
   User,
-  Tag,
-  AlertTriangle,
   FileText,
-  Clock,
   Target,
-  Users,
-  Paperclip,
   X,
-  CheckCircle,
   Edit,
-  MoreVertical
+  MoreVertical,
+  Shovel
 } from "lucide-react";
 import { Link } from 'react-router-dom';
+import { allAvilableWorkers, allSupervisors } from '../../services/workerService';
+import { allTeams } from '../../services/teamSlice';
+import { allPlaces } from '../../services/placeService';
+import { useDispatch, useSelector } from 'react-redux';
 
 const CreateRequest = ({ onBack }) => {
+  const {user} = useSelector((state)=>state.auth);
+  const dispatch = useDispatch();
+  const currntUser = user?.personCode;
   const [activeTab, setActiveTab] = useState('details');
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     description: '',
-    category: '',
-    priority: 'Medium',
-    department: '',
-    dueDate: '',
-    assignedTo: '',
-    attachments: []
+    taskType: '',
+    taskStatus: '',
+    createdBy:currntUser,
+    startDateTime: '',
+    endDateTime: '',
+    assignedSupervisor: '',
+    teamId:'',
+    workerId:'',
+    placeId:'',
   });
 
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
-    title: '',
+   name: '',
     description: '',
-    assignedTo: '',
-    dueDate: '',
-    priority: 'Medium',
-    status: 'Not Started'
+    taskType: '',
+    taskStatus: '',
+    startDateTime: '',
+    endDateTime: '',
+    createdBy:'',
+    assignedSupervisor: '',
+    teamId:'',
+    workerId:'',
+    placeId:'',
   });
 
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [supervisors,setSupervisors] = useState([]);
+  const [workers,setWorkers] = useState([]);
+  const [teams,setTeams] = useState([]);
+  const [places,setPlaces] = useState([]);
 
-  const categories = ['Maintenance', 'HR', 'Procurement', 'Training', 'IT Support', 'Finance', 'Operations'];
-  const priorities = ['Low', 'Medium', 'High', 'Critical'];
-  const departments = ['Production', 'Quality Control', 'Packaging', 'Maintenance', 'Administration', 'HR'];
-  const employees = [
-    'Mike Fernando - Maintenance Lead',
-    'Lisa Kumar - HR Manager', 
-    'Anna Rodriguez - Procurement Officer',
-    'Robert Taylor - Training Coordinator',
-    'Sarah Johnson - IT Support',
-    'David Chen - Finance Manager'
-  ];
+  const taskTypes = ['TEA-PLUCKING', 'CLEANING', 'FERTILIZING', 'TEA-COLLECTING'];
+  const taskStatuses = ['ASSIGNED', 'PENDING', 'IN_PROCESS', 'COMPLETED','CANCELLED'];
 
-  const taskStatuses = ['Not Started', 'In Progress', 'Completed', 'On Hold'];
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -83,7 +87,6 @@ const CreateRequest = ({ onBack }) => {
         ));
         setEditingTask(null);
       } else {
-        // Add new task
         setTasks(prev => [...prev, { 
           ...newTask, 
           id: Date.now(),
@@ -92,12 +95,16 @@ const CreateRequest = ({ onBack }) => {
       }
       
       setNewTask({
-        title: '',
-        description: '',
-        assignedTo: '',
-        dueDate: '',
-        priority: 'Medium',
-        status: 'Not Started'
+        name: '',
+    description: '',
+    taskType: '',
+    taskStatus: '',
+    startDateTime: '',
+    endDateTime: '',
+    assignedSupervisor: '',
+    teamId:'',
+    workerId:'',
+    placeId:'',
       });
       setShowTaskForm(false);
     }
@@ -150,19 +157,61 @@ const CreateRequest = ({ onBack }) => {
       </span>
     );
   };
-
+  const getAllSupervisors = async()=>{
+    try {
+      const supervisorsResponse = await allSupervisors();
+      setSupervisors(supervisorsResponse.data.supervisors);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  const getAllWorkers = async()=>{
+    try {
+      const workersResponse = await allAvilableWorkers();
+      setWorkers(workersResponse.data.workers);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  const getAllTeams = async()=>{
+    try {
+      const teamsResponse = await allTeams();
+      if(teamsResponse){
+        setTeams(teamsResponse.data.data);
+      }
+      
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+  const getAllPlaces = async()=>{
+    try {
+       const placeRsponse = await allPlaces();
+      if(placeRsponse){
+        setPlaces(placeRsponse.data.data);
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+useEffect(()=>{
+  getAllSupervisors();
+  getAllWorkers();
+  getAllTeams();
+  getAllPlaces();
+},[])
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center space-x-2 text-sm text-gray-600">
-        <Link to={'/dashboard/requests'}
+        <Link to={'/dashboard/tasks'}
           onClick={onBack}
           className="hover:text-green-600 transition-colors font-medium cursor-pointer"
         >
-          Requests
+          Tasks
         </Link>
         <span className="text-gray-400">/</span>
-        <span className="text-gray-900 font-medium">Create New Request</span>
+        <span className="text-gray-900 font-medium">Create New Task</span>
       </div>
 
       {/* Header */}
@@ -170,51 +219,23 @@ const CreateRequest = ({ onBack }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link
-              to={'/dashboard/requests'}
+              to={'/dashboard/tasks'}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="h-5 w-5 text-gray-600" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Create New Request</h1>
-              <p className="text-gray-600 mt-1">Fill in the details to submit a new request</p>
+              <h1 className="text-2xl font-bold text-gray-900">Create New Task</h1>
+              <p className="text-gray-600 mt-1">Fill in the details to submit a new task</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => {
-                if (window.confirm('Are you sure you want to delete this request? All data will be lost.')) {
-                  // Clear all form data
-                  setFormData({
-                    title: '',
-                    description: '',
-                    category: '',
-                    priority: 'Medium',
-                    department: '',
-                    dueDate: '',
-                    assignedTo: '',
-                    attachments: []
-                  });
-                  setTasks([]);
-                  // Optionally navigate back or show success message
-                  alert('Request deleted successfully!');
-                  onBack();
-                }
-              }}
-              className="px-4 py-2 text-red-700 bg-red-100 rounded-xl hover:bg-red-200 transition-colors"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </button>
-            <button className="px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-              Save Draft
-            </button>
+          <div className="hidden md:block lg:flex items-center space-x-3">
             <button
               onClick={handleSubmit}
               className="flex items-center px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium"
             >
               <Save className="h-4 w-4 mr-2" />
-              Submit Request
+              Create Task
             </button>
           </div>
         </div>
@@ -235,11 +256,11 @@ const CreateRequest = ({ onBack }) => {
             >
               <div className="flex items-center space-x-2">
                 <FileText className="h-4 w-4" />
-                <span>Request Details</span>
+                <span>Task Details</span>
               </div>
             </button>
             <button
-              onClick={() => setActiveTab('tasks')}
+              onClick={() => setActiveTab('items')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'tasks'
                   ? 'border-green-500 text-green-600'
@@ -247,8 +268,8 @@ const CreateRequest = ({ onBack }) => {
               }`}
             >
               <div className="flex items-center space-x-2">
-                <Target className="h-4 w-4" />
-                <span>Tasks</span>
+                <Shovel className="h-5 w-5" />
+                <span>Task Items</span>
                 {tasks.length > 0 && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                     {tasks.length}
@@ -263,19 +284,28 @@ const CreateRequest = ({ onBack }) => {
         <div className="p-6">
           {activeTab === 'details' && (
             <div className="space-y-8">
-              {/* Basic Information */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Task Details</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="lg:col-span-2">
+                    <input
+                      type="text"
+                      value={formData.createdBy}
+                      readOnly
+                      hidden
+                      placeholder="Created By"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Request Title *
+                      Task Title *
                     </label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
-                      placeholder="Enter a clear, descriptive title for your request"
+                      placeholder="Enter a clear, descriptive title for your task"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
@@ -287,7 +317,7 @@ const CreateRequest = ({ onBack }) => {
                     <textarea
                       value={formData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Provide detailed information about your request..."
+                      placeholder="Provide detailed information about your task..."
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
@@ -295,115 +325,129 @@ const CreateRequest = ({ onBack }) => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Category *
+                      Task Type *
                     </label>
                     <select
-                      value={formData.category}
-                      onChange={(e) => handleInputChange('category', e.target.value)}
+                      value={formData.taskType}
+                      onChange={(e) => handleInputChange('taskType', e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                      <option value="">Select Category</option>
-                      {categories.map(category => (
-                        <option key={category} value={category}>{category}</option>
+                      <option value="">Select Task Type</option>
+                      {taskTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Priority *
+                      Task Status *
                     </label>
                     <select
-                      value={formData.priority}
-                      onChange={(e) => handleInputChange('priority', e.target.value)}
+                      value={formData.taskStatus}
+                      onChange={(e) => handleInputChange('taskStatus', e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                      {priorities.map(priority => (
-                        <option key={priority} value={priority}>{priority}</option>
+                      {taskStatuses.map(status => (
+                        <option key={status} value={status}>{status}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Department
-                    </label>
-                    <select
-                      value={formData.department}
-                      onChange={(e) => handleInputChange('department', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <option value="">Select Department</option>
-                      {departments.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Due Date
+                      Start Date
                     </label>
                     <input
                       type="date"
-                      value={formData.dueDate}
-                      onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                      value={formData.startDateTime}
+                      onChange={(e) => handleInputChange('startDateTime', e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
 
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Assign To
+                      Place
                     </label>
                     <select
-                      value={formData.assignedTo}
-                      onChange={(e) => handleInputChange('assignedTo', e.target.value)}
+                      value={formData.placeId}
+                      onChange={(e) => handleInputChange('placeId', e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
-                      <option value="">Select Assignee</option>
-                      {employees.map(employee => (
-                        <option key={employee} value={employee}>{employee}</option>
+                      <option value="">Select Place</option>
+                      {places.map(place => (
+                        <option key={place.placeId} value={place.placeCode}>{place.placeCode}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="lg:col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Supervisor
+                    </label>
+                    <select
+                      value={formData.assignedSupervisor}
+                      onChange={(e) => handleInputChange('assignedSupervisor', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Select Supervisor</option>
+                      {supervisors.map(supv => (
+                        <option key={supv.id} value={supv.personCode}>{supv.personCode}-{supv.firstName}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="lg:col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Team
+                    </label>
+                    <select
+                      value={formData.teamId}
+                      onChange={(e) => handleInputChange('teamId', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Select Team</option>
+                      {teams.map(team => (
+                        <option key={team.teamId} value={team.name}>{team.description}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="lg:col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Worker
+                    </label>
+                    <select
+                      value={formData.workerId}
+                      onChange={(e) => handleInputChange('workerId', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Select Worker</option>
+                      {workers.map(worker => (
+                        <option key={worker.personCode} value={worker.personCode}>{worker.personCode} - {worker.firstName}</option>
                       ))}
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Attachments */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Attachments</h3>
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-400 transition-colors">
-                  <Paperclip className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600 mb-2">Drop files here or click to browse</p>
-                  <p className="text-sm text-gray-500">Supports: PDF, DOC, DOCX, JPG, PNG (Max 10MB each)</p>
-                  <input
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      // Handle file upload
-                      console.log('Files:', e.target.files);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Choose Files
-                  </button>
-                </div>
-              </div>
+              <div className="flex md:hidden lg:hidden items-center space-x-3">    
+                <button
+                  onClick={handleSubmit}
+                  className="flex items-center px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Create Task
+                </button>
+              </div>    
             </div>
           )}
 
-          {activeTab === 'tasks' && (
+          {activeTab === 'items' && (
             <div className="space-y-6">
               {/* Tasks Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Request Tasks</h3>
-                  <p className="text-gray-600 mt-1">Break down your request into manageable tasks</p>
+                  <h3 className="text-lg font-semibold text-gray-900">Task Items</h3>
+                  <p className="text-gray-600 mt-1">Add required items to the task</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   {tasks.length > 0 && (

@@ -51,6 +51,9 @@ import {
   NotebookText,
   Lightbulb,
   ListOrdered,
+  MapPinHouse,
+  Fence,
+  ListEnd
 } from 'lucide-react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { logout } from '../app/auth/authSlice';
@@ -104,7 +107,6 @@ const Dashboard = () => {
       subItems: [
         { id: '', label: 'Overview', icon: Monitor },
         { id: 'reports', label: 'Reports', icon: FileText },
-        { id: 'analytics-dash', label: 'Analytics', icon: BarChart3 }
       ]
     },
     { 
@@ -113,8 +115,6 @@ const Dashboard = () => {
       icon: Factory,
       subItems: [
         { id: 'production-overview', label: 'Overview', icon: Monitor },
-        { id: 'quality-control', label: 'Quality Control', icon: CheckCircle },
-        { id: 'production-reports', label: 'Reports', icon: FileText }
       ]
     },
     { 
@@ -123,9 +123,7 @@ const Dashboard = () => {
       icon: Package,
       subItems: [
         { id: 'inventory', label: 'Stock Levels', icon: BoxIcon },
-        { id: 'warehouse', label: 'Warehouse', icon: Warehouse },
-        { id: 'inventory-in', label: 'Stock In', icon: PlusCircle },
-        { id: 'inventory-out', label: 'Stock Out', icon: MinusCircle }
+        { id: 'stockTransactions', label: 'Stock Transactions', icon: ListEnd }
       ]
     },
     { 
@@ -143,24 +141,38 @@ const Dashboard = () => {
       subItems: [
         { id: 'workers', label: 'All Workers', icon: Users },
         { id: 'teams', label: 'Teams', icon: UserPlus },
-        { id: 'attendance', label: 'Attendance', icon: UserCheck },
-        { id: 'payroll', label: 'Payroll', icon: DollarSign }
       ]
     },
     { 
-      id: 'request', 
-      label: 'Requests', 
+      id: 'place', 
+      label: 'Place', 
+      icon: MapPinHouse,
+      subItems: [
+        { id: 'place', label: 'All Places', icon: Fence},
+      ]
+    },
+    { 
+      id: 'tasks', 
+      label: 'Tasks', 
       icon: ConciergeBell,
       subItems: [
-        { id: 'requests', label: 'All Requests', icon: ScrollText},
+        { id: 'tasks', label: 'All Tasks', icon: ScrollText},
+      ]
+    },
+    { 
+      id: 'attendance', 
+      label: 'Attendance', 
+      icon: UserCheck,
+      subItems: [
+        { id: 'attendance', label: 'Mark Attendance', icon: UserCheck},
       ]
     },
      { 
-      id: 'tasks', 
-      label: 'Tasks', 
-      icon: NotebookText,
+      id: 'payroll', 
+      label: 'Payroll', 
+      icon: DollarSign,
       subItems: [
-        { id: 'tasks', label: 'All Tasks', icon: ListOrdered},
+        { id: 'payroll', label: 'Payroll', icon: DollarSign},
       ]
     },
     { 
@@ -168,21 +180,8 @@ const Dashboard = () => {
       label: 'Distribution', 
       icon: Truck,
       subItems: [
-        { id: 'orders', label: 'Orders', icon: Package },
-        { id: 'shipping', label: 'Shipping', icon: Truck },
-        { id: 'routes', label: 'Routes', icon: Route },
+        { id: 'vehicles', label: 'Vehicles', icon: Truck },
         { id: 'tracking', label: 'Tracking', icon: MapPinIcon }
-      ]
-    },
-    { 
-      id: 'analytics', 
-      label: 'Analytics', 
-      icon: TrendingUp,
-      subItems: [
-        { id: 'sales-analytics', label: 'Sales', icon: BarChart },
-        { id: 'production-analytics', label: 'Production', icon: LineChart },
-        { id: 'financial', label: 'Financial', icon: DollarSign },
-        { id: 'trends', label: 'Trends', icon: TrendingUp }
       ]
     },
     { 
@@ -191,9 +190,6 @@ const Dashboard = () => {
       icon: Settings,
       subItems: [
         { id: 'profile', label: 'Profile', icon: UserCog },
-        { id: 'security', label: 'Security', icon: Shield },
-        { id: 'system', label: 'System', icon: Database },
-        { id: 'preferences', label: 'Preferences', icon: Settings }
       ]
     },
   ];
