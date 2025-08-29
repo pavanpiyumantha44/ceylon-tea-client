@@ -17,6 +17,7 @@ import ViewPlace from '../components/Place/ViewPlace';
 import CreateTask from '../components/Task/CreateTask';
 import EditProduct from '../components/Inventory/EditProduct';
 import StockTransactions from '../components/Inventory/StockTransactions';
+import TeaPlucking from '../components/Production/TeaPlukcing';
 
 const AppRoutes = () => {
   return (
@@ -35,6 +36,7 @@ const AppRoutes = () => {
       >
         <Route index element={<Summary />} />
         <Route path="production" element={<Production />} />
+        <Route path="teaPlucking" element={<TeaPlucking />} />
         <Route path="inventory" element={<Inventory/>}/>
         <Route path="solution" element={<Solution />} />
         <Route path="inventory" element={<Inventory />} />

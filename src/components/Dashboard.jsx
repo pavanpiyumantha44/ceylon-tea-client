@@ -114,7 +114,7 @@ const Dashboard = () => {
       label: 'Production', 
       icon: Factory,
       subItems: [
-        { id: 'production-overview', label: 'Overview', icon: Monitor },
+        { id: 'teaPlucking', label: 'Tea Plucking Records', icon: Leaf },
       ]
     },
     { 
