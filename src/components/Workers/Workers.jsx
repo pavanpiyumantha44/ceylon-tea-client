@@ -537,7 +537,7 @@ const Workers = () => {
             </div>
           </>
         ) : (
-          <WorkerDataEntryForm/>
+          <WorkerDataEntryForm setReload={setReload}/>
         )}
       </div>
     </div>}

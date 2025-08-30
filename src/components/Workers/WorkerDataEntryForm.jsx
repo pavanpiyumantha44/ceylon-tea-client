@@ -10,8 +10,9 @@ import {
   Save
 } from "lucide-react";
 import { addPerson, getRoles } from "../../services/workerService";
+import { ToastContainer, toast } from 'react-toastify';
 
-const WorkerDataEntryForm = () => {
+const WorkerDataEntryForm = ({setReload}) => {
   const [formData, setFormData] = useState({
     workerId: '',
     firstName: '',
@@ -38,39 +39,71 @@ const WorkerDataEntryForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    const errors = validateForm();
+    if(errors.length>0){
+      toast.error(errors[0], {
+            position: 'top-center',
+          });
+    }
+    else{ 
     try {
-      //console.log(formData);
        setIsSubmitting(true);
     
-        // Simulate API call
        const response = await addPerson(formData);
        console.log(response)
-        
+      setReload(true);
         setIsSubmitting(false);
         setShowSuccess(true);
         
-        // Reset form after 2 seconds
-        // setTimeout(() => {
-        //   setShowSuccess(false);
-        //   setFormData({
-        //     workerId: '',
-        //     name: '',
-        //     department: '',
-        //     shift: '',
-        //     contact: '',
-        //     address: '',
-        //     emergencyContact: '',
-        //     joinDate: '',
-        //     salary: '',
-        //     notes: ''
-        //   });
-        // }, 2000);
     } catch (error) {
       console.log(error);
     }
+  }
   };
-
+  const validateForm = () => {
+      const errors = [];
+      
+      if (!formData.firstName) {
+        errors.push("Please Enter First Name");
+      }
+      if (!formData.lastName) {
+        errors.push("Please Enter Last Name");
+      }
+      if (!formData.roleId) {
+        errors.push("Please select a Role");
+      }
+      if (!formData.nicNumber) {
+        errors.push("Please Enter a NIC number");
+      }
+      if (formData.nicNumber) {
+        const nic = String(formData.nicNumber).trim();
+        const nicRegex = /^(\d{9}[vx]|\d{12})$/i;
+        if (!nicRegex.test(nic)) {
+          errors.push("NIC Number is invalid");
+        }
+      }
+      if (!formData.phone) {
+        errors.push("Please Enter a Phone number");
+      }
+      if (formData.phone) {
+        const mobileRegex = /^(?:\+94|0)7\d{8}$/;
+        if(!mobileRegex.test(formData.phone))
+          errors.push("Phone Number is invalid");
+      }
+      if (formData.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailRegex.test(formData.email))
+          errors.push("Please Enter a valid email adress");
+      }
+       if (!formData.address) {
+        errors.push("Please Enter Address");
+      }
+      if (!formData.dob) {
+        errors.push("Please select DOB");
+      }
+      
+      return errors;
+    };
   const handleCancel = () => {
     setFormData({
       firstName: '',
@@ -116,6 +149,7 @@ const WorkerDataEntryForm = () => {
 
   return (
     <div className="max-w-full mx-auto">
+      <ToastContainer autoClose={2000} />
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">

@@ -7,3 +7,4 @@ export const allWorkers = ()=>API.get('/person/getAllPerson');
 export const deleteWorker = (id)=>API.delete(`/person/deletePerson/${id}`);
 export const allSupervisors = ()=>API.get('/person/getAllSupervisors');
 export const allAvilableWorkers = ()=>API.get('/person/getAllWorkers');
+export const allTeaPluckers = ()=>API.get('/person/getAllTeaPluckers');

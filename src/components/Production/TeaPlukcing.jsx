@@ -21,6 +21,9 @@ import {
   Clock,
   Save
 } from "lucide-react";
+import { allTeaPluckers } from "../../services/workerService";
+import { addBulkTeaPlucking, addSingleTeaPlucking, getTeaRecords } from "../../services/teaPluckingService";
+import { ToastContainer, toast } from 'react-toastify';
 
 const TeaPlucking = () => {
   const [pluckingRecords, setPluckingRecords] = useState([]);
@@ -34,7 +37,8 @@ const TeaPlucking = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkEntryModal, setShowBulkEntryModal] = useState(false);
-  const [ratePerKg, setRatePerKg] = useState(250); // Default rate
+  const [ratePerKg, setRatePerKg] = useState(250);
+  const [reload,setReload] = useState(false);
 
   // Mock workers data - replace with actual API call
   const mockWorkers = [
@@ -90,9 +94,25 @@ const TeaPlucking = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Replace with actual API calls
-      setWorkers(mockWorkers);
-      setPluckingRecords(mockPluckingRecords);
+      const getWorkersResponse = await allTeaPluckers();
+      if(getWorkersResponse.data.success){
+        setWorkers(getWorkersResponse.data.workers);
+      }
+  const TeaRecordsResponse = await getTeaRecords();
+    if (TeaRecordsResponse.data.success) {
+      const mappedData = TeaRecordsResponse.data.data.map(record => ({
+        tpId: record.tpId,
+        personId: record.personId,
+        date: record.date ? new Date(record.date).toISOString().split("T")[0] : null,
+        weightKg: record.weightKg,
+        ratePerKg: record.ratePerKg,
+        totalPayment: record.totalPayment,
+        person: { name: record.person?.firstName || "Unknown" },
+        createdAt: new Date(record.createdAt),
+        updatedAt: record.updatedAt ? new Date(record.updatedAt) : new Date()
+      }));
+      setPluckingRecords(mappedData);
+    }
       setError(null);
     } catch (err) {
       setError("Failed to fetch data");
@@ -104,7 +124,7 @@ const TeaPlucking = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [reload]);
 
   // Format time ago
   const formatTimeAgo = (date) => {
@@ -208,17 +228,19 @@ const TeaPlucking = () => {
         const totalPayment = Number(formData.weightKg) * Number(formData.ratePerKg);
         
         const newRecord = {
-          tpId: Date.now().toString(),
           personId: formData.personId,
           date: formData.date,
           weightKg: Number(formData.weightKg),
           ratePerKg: Number(formData.ratePerKg),
           totalPayment: totalPayment,
-          person: { name: selectedWorker.name },
+          person: { name: selectedWorker.firstName },
           createdAt: new Date(),
           updatedAt: new Date()
         };
-        
+        const addTeaPluckingResponse = await addSingleTeaPlucking(newRecord);
+        if(addTeaPluckingResponse.data.success){
+          console.log(addTeaPluckingResponse.data.data);
+        }
         setPluckingRecords(prev => [...prev, newRecord]);
         
         // Reset form
@@ -290,9 +312,9 @@ const TeaPlucking = () => {
                 }`}
               >
                 <option value="">Select a worker</option>
-                {workers.filter(w => w.isActive === "Y").map(worker => (
+                {workers.filter(w => w.isDeleted === "N").map(worker => (
                   <option key={worker.personId} value={worker.personId}>
-                    {worker.name}
+                    {worker.personCode}-{`${worker.firstName} ${worker.lastName}`}
                   </option>
                 ))}
               </select>
@@ -313,7 +335,7 @@ const TeaPlucking = () => {
                   value={formData.weightKg}
                   onChange={handleInputChange}
                   placeholder="0.0"
-                  step="0.1"
+                  step="0.01"
                   min="0"
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     formErrors.weightKg ? 'border-red-300' : 'border-gray-300'
@@ -398,10 +420,10 @@ const TeaPlucking = () => {
       if (showBulkEntryModal) {
         // Initialize bulk data with all active workers
         const initialData = workers
-          .filter(w => w.isActive === "Y")
+          .filter(w => w.isDeleted === "N")
           .map(worker => ({
             personId: worker.personId,
-            name: worker.name,
+            name: worker.firstName,
             weightKg: "",
             error: ""
           }));
@@ -431,9 +453,8 @@ const TeaPlucking = () => {
       
       try {
         const newRecords = validEntries.map(item => ({
-          tpId: `${Date.now()}_${item.personId}`,
           personId: item.personId,
-          date: bulkDate,
+          date: new Date(bulkDate),
           weightKg: Number(item.weightKg),
           ratePerKg: Number(bulkRate),
           totalPayment: Number(item.weightKg) * Number(bulkRate),
@@ -441,10 +462,27 @@ const TeaPlucking = () => {
           createdAt: new Date(),
           updatedAt: new Date()
         }));
-        
-        setPluckingRecords(prev => [...prev, ...newRecords]);
-        setShowBulkEntryModal(false);
-        setBulkData([]);
+        const bulkAddResponse = await addBulkTeaPlucking(newRecords);
+        if(bulkAddResponse.data.success){
+           const { results } = bulkAddResponse.data;
+           const skippedRecords = results.filter(r => r.status === "skipped");
+            if (skippedRecords.length > 0) {
+              const skippedMsg = skippedRecords
+                .map(r => `Person ID: ${r.personId} - ${r.reason}`)
+                .join("\n");
+              toast.error(skippedMsg, {
+                position: 'top-center',
+              });
+            }
+          console.log(bulkAddResponse.data);
+          const insertedRecords = results.filter(r => r.status === "inserted");
+          if (insertedRecords.length > 0) {
+            setPluckingRecords(prev => [...prev, ...insertedRecords]);
+          }
+          setShowBulkEntryModal(false);
+          setBulkData([]);
+          setReload(!reload);
+        }
         
       } catch (error) {
         console.error("Error adding bulk records:", error);
@@ -740,6 +778,7 @@ const TeaPlucking = () => {
 
   return (
     <div className="space-y-6">
+      <ToastContainer autoClose={2000} />
       {/* Modals */}
       <SingleEntryModal />
       <BulkEntryModal />
@@ -904,7 +943,7 @@ const TeaPlucking = () => {
                   </tr>
                 ) : (
                   currentItems.map((record) => (
-                    <tr key={record.tpId} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={record.personId} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="p-4">
                         <div className="flex items-center">
                           <User className="h-4 w-4 text-gray-400 mr-2" />
