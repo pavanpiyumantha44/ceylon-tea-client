@@ -317,6 +317,7 @@ const Place = () => {
                       ID
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-700">Description</th>
+                    <th className="text-left p-4 font-semibold text-gray-700">Area Size (ha)</th>
                     <th className="text-left p-4 font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
@@ -350,6 +351,12 @@ const Place = () => {
                         <div className="flex items-center text-sm text-gray-600">
                           <LocateIcon className="h-3 w-3 mr-1" />
                           {place.description}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <LocateIcon className="h-3 w-3 mr-1" />
+                          {place.size}Ha
                         </div>
                       </td>
                       

@@ -85,7 +85,7 @@ const Summary = () => {
     { month: "Jun", production: 48000, target: 52000 },
     { month: "Jul", production: 61000, target: 58000 },
     { month: "Aug", production: 55000, target: 60000 },
-    { month: "Sep", production: 67000, target: 65000 },
+    { month: "Sep", production: 5400, target: 65000 },
   ];
 
   const showAlert = ()=>{

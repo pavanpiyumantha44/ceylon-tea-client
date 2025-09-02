@@ -18,14 +18,18 @@ import { allAvilableWorkers, allSupervisors } from '../../services/workerService
 import { allTeams } from '../../services/teamSlice';
 import { allPlaces } from '../../services/placeService';
 import { useDispatch, useSelector } from 'react-redux';
+import { validateTaskEntryForm } from '../../utils/validations';
+import { ToastContainer, toast } from 'react-toastify';
+import { addNewTask } from '../../services/taskService';
+import { getStockItems } from '../../services/stockService';
 
 const CreateRequest = ({ onBack }) => {
   const {user} = useSelector((state)=>state.auth);
   const dispatch = useDispatch();
-  const currntUser = user?.personCode;
+  const currntUser = user?.personId;
   const [activeTab, setActiveTab] = useState('details');
   const [formData, setFormData] = useState({
-    name: '',
+    taskName: '',
     description: '',
     taskType: '',
     taskStatus: '',
@@ -36,29 +40,22 @@ const CreateRequest = ({ onBack }) => {
     teamId:'',
     workerId:'',
     placeId:'',
+    items:'',
   });
 
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState({
-   name: '',
-    description: '',
-    taskType: '',
-    taskStatus: '',
-    startDateTime: '',
-    endDateTime: '',
-    createdBy:'',
-    assignedSupervisor: '',
-    teamId:'',
-    workerId:'',
-    placeId:'',
+  const [items, setItems] = useState([]);
+  const [taskItem, setTaskItem] = useState({
+    itemId: '',
+    quantity: '',
   });
 
-  const [showTaskForm, setShowTaskForm] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [supervisors,setSupervisors] = useState([]);
   const [workers,setWorkers] = useState([]);
   const [teams,setTeams] = useState([]);
   const [places,setPlaces] = useState([]);
+  const [stockItems,setStockItems] = useState([]);
 
   const taskTypes = ['TEA-PLUCKING', 'CLEANING', 'FERTILIZING', 'TEA-COLLECTING'];
   const taskStatuses = ['ASSIGNED', 'PENDING', 'IN_PROCESS', 'COMPLETED','CANCELLED'];
@@ -72,60 +69,60 @@ const CreateRequest = ({ onBack }) => {
   };
 
   const handleTaskInputChange = (field, value) => {
-    setNewTask(prev => ({
+    setTaskItem(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const addTask = () => {
-    if (newTask.title.trim()) {
-      if (editingTask !== null) {
+  const addItem = () => {
+    if (taskItem.itemId) {
+      if (editingItem !== null) {
         // Update existing task
-        setTasks(prev => prev.map((task, index) => 
-          index === editingTask ? { ...newTask, id: task.id } : task
+        setItems(prev => prev.map((task, index) => 
+          index === editingItem ? { ...taskItem, id: task.id } : task
         ));
-        setEditingTask(null);
+        setEditingItem(null);
       } else {
-        setTasks(prev => [...prev, { 
-          ...newTask, 
+        setItems(prev => [...prev, { 
+          ...taskItem, 
           id: Date.now(),
           createdAt: new Date().toISOString()
         }]);
       }
       
-      setNewTask({
-        name: '',
-    description: '',
-    taskType: '',
-    taskStatus: '',
-    startDateTime: '',
-    endDateTime: '',
-    assignedSupervisor: '',
-    teamId:'',
-    workerId:'',
-    placeId:'',
+      setTaskItem({
+        itemId: '',
+        quantity: '',
       });
-      setShowTaskForm(false);
+      setShowItemForm(false);
     }
   };
 
-  const editTask = (index) => {
-    setNewTask(tasks[index]);
-    setEditingTask(index);
-    setShowTaskForm(true);
+  const editItem = (index) => {
+    setTaskItem(items[index]);
+    setEditingItem(index);
+    setShowItemForm(true);
   };
 
-  const deleteTask = (index) => {
-    setTasks(prev => prev.filter((_, i) => i !== index));
+  const deleteItem = (index) => {
+    setItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
-    // Handle form submission here
-    console.log('Request Data:', formData);
-    console.log('Tasks:', tasks);
-    // You would typically send this to your API
-    alert('Request created successfully!');
+  const handleSubmit = async() => {
+     const updatedFormData = {...formData,items: items,};
+    const errors = validateTaskEntryForm(updatedFormData);
+    if(errors.length>0){
+        toast.error(errors[0], {
+            position: 'top-center',
+          });
+    }else{
+      console.log('Request Data:', updatedFormData);
+      const newTaskResponse = await addNewTask(updatedFormData);
+      if(newTaskResponse.data.success){
+        console.log(newTaskResponse.data)
+      }
+    }
   };
 
   const getPriorityBadge = (priority) => {
@@ -194,11 +191,22 @@ const CreateRequest = ({ onBack }) => {
       console.log(error.message);
     }
   }
+  const fetchStockItems = async()=>{
+    try {
+      const stockItemsResponse = await getStockItems();
+      if(stockItemsResponse.data.success){
+        setStockItems(stockItemsResponse.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 useEffect(()=>{
   getAllSupervisors();
   getAllWorkers();
   getAllTeams();
   getAllPlaces();
+  fetchStockItems();
 },[])
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
@@ -243,6 +251,7 @@ useEffect(()=>{
 
       {/* Main Content */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <ToastContainer autoClose={2000} />
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
@@ -270,9 +279,9 @@ useEffect(()=>{
               <div className="flex items-center space-x-2">
                 <Shovel className="h-5 w-5" />
                 <span>Task Items</span>
-                {tasks.length > 0 && (
+                {items.length > 0 && (
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    {tasks.length}
+                    {items.length}
                   </span>
                 )}
               </div>
@@ -304,7 +313,7 @@ useEffect(()=>{
                     <input
                       type="text"
                       value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
+                      onChange={(e) => handleInputChange('taskName', e.target.value)}
                       placeholder="Enter a clear, descriptive title for your task"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
@@ -348,6 +357,7 @@ useEffect(()=>{
                       onChange={(e) => handleInputChange('taskStatus', e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
+                      <option value="">Select Task Status</option>
                       {taskStatuses.map(status => (
                         <option key={status} value={status}>{status}</option>
                       ))}
@@ -377,7 +387,7 @@ useEffect(()=>{
                     >
                       <option value="">Select Place</option>
                       {places.map(place => (
-                        <option key={place.placeId} value={place.placeCode}>{place.placeCode}</option>
+                        <option key={place.placeId} value={place.placeId}>{place.placeCode}</option>
                       ))}
                     </select>
                   </div>
@@ -392,7 +402,7 @@ useEffect(()=>{
                     >
                       <option value="">Select Supervisor</option>
                       {supervisors.map(supv => (
-                        <option key={supv.id} value={supv.personCode}>{supv.personCode}-{supv.firstName}</option>
+                        <option key={supv.id} value={supv.personId}>{supv.personCode}-{supv.firstName}</option>
                       ))}
                     </select>
                   </div>
@@ -407,7 +417,7 @@ useEffect(()=>{
                     >
                       <option value="">Select Team</option>
                       {teams.map(team => (
-                        <option key={team.teamId} value={team.name}>{team.description}</option>
+                        <option key={team.teamId} value={team.teamId}>{team.description}</option>
                       ))}
                     </select>
                   </div>
@@ -422,7 +432,7 @@ useEffect(()=>{
                     >
                       <option value="">Select Worker</option>
                       {workers.map(worker => (
-                        <option key={worker.personCode} value={worker.personCode}>{worker.personCode} - {worker.firstName}</option>
+                        <option key={worker.personId} value={worker.personId}>{worker.personCode} - {worker.firstName}</option>
                       ))}
                     </select>
                   </div>
@@ -450,51 +460,47 @@ useEffect(()=>{
                   <p className="text-gray-600 mt-1">Add required items to the task</p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  {tasks.length > 0 && (
+                  {items.length > 0 && (
                     <button
                       onClick={() => {
                         if (window.confirm('Are you sure you want to delete all tasks? This action cannot be undone.')) {
-                          setTasks([]);
+                          setItems([]);
                         }
                       }}
                       className="flex items-center px-4 py-2 text-red-700 bg-red-100 rounded-xl hover:bg-red-200 transition-colors"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete All Tasks
+                      Delete All Items
                     </button>
                   )}
                   <button
                     onClick={() => {
-                      setShowTaskForm(true);
-                      setEditingTask(null);
-                      setNewTask({
-                        title: '',
-                        description: '',
-                        assignedTo: '',
-                        dueDate: '',
-                        priority: 'Medium',
-                        status: 'Not Started'
+                      setShowItemForm(true);
+                      setEditingItem(null);
+                      setTaskItem({
+                        itemId: '',
+                        quantity: '',
                       });
                     }}
                     className="flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Task
+                    Add Item
                   </button>
                 </div>
               </div>
 
               {/* Task Form */}
-              {showTaskForm && (
+              {showItemForm && (
                 <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="font-semibold text-gray-900">
-                      {editingTask !== null ? 'Edit Task' : 'Add New Task'}
+                      {editingItem !== null ? 'Edit Task' : 'Add New Item'}
                     </h4>
                     <button
                       onClick={() => {
-                        setShowTaskForm(false);
-                        setEditingTask(null);
+                        setShowItemForm(false);
+                        setEditingItem(null);
                       }}
                       className="p-1 hover:bg-gray-200 rounded"
                     >
@@ -503,132 +509,72 @@ useEffect(()=>{
                   </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Task Title *</label>
-                      <input
-                        type="text"
-                        value={newTask.title}
-                        onChange={(e) => handleTaskInputChange('title', e.target.value)}
-                        placeholder="Enter task title"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      />
-                    </div>
-
-                    <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                      <textarea
-                        value={newTask.description}
-                        onChange={(e) => handleTaskInputChange('description', e.target.value)}
-                        placeholder="Task description..."
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      />
-                    </div>
-
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Item</label>
                       <select
-                        value={newTask.assignedTo}
-                        onChange={(e) => handleTaskInputChange('assignedTo', e.target.value)}
+                        value={taskItem.itemId}
+                        onChange={(e) => handleTaskInputChange('itemId', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                       >
-                        <option value="">Select Assignee</option>
-                        {employees.map(employee => (
-                          <option key={employee} value={employee}>{employee}</option>
+                        <option value="">Select Item</option>
+                        {stockItems.map(item => (
+                          <option key={item.itemId} value={item.itemId}>{`${item.name} - ${item.unit?.toUpperCase()}`}</option>
                         ))}
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                      <input
-                        type="date"
-                        value={newTask.dueDate}
-                        onChange={(e) => handleTaskInputChange('dueDate', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      />
-                    </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                      <select
-                        value={newTask.priority}
-                        onChange={(e) => handleTaskInputChange('priority', e.target.value)}
+                       <input
+                        type="number"
+                        value={taskItem.quantity}
+                        min={0}
+                        max={10000}
+                        onChange={(e) => handleTaskInputChange('quantity', e.target.value)}
+                        placeholder="Enter Quantity"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        {priorities.map(priority => (
-                          <option key={priority} value={priority}>{priority}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                      <select
-                        value={newTask.status}
-                        onChange={(e) => handleTaskInputChange('status', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        {taskStatuses.map(status => (
-                          <option key={status} value={status}>{status}</option>
-                        ))}
-                      </select>
+                      />
                     </div>
                   </div>
 
                   <div className="flex justify-end space-x-3 mt-4">
                     <button
                       onClick={() => {
-                        setShowTaskForm(false);
-                        setEditingTask(null);
+                        setShowItemForm(false);
+                        setEditingItem(null);
                       }}
                       className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
-                      onClick={addTask}
+                      onClick={addItem}
                       className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
-                      {editingTask !== null ? 'Update Task' : 'Add Task'}
+                      {editingItem !== null ? 'Update Item' : 'Add Item'}
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Tasks List */}
-              {tasks.length > 0 ? (
+              {/* Items List */}
+              {items.length > 0 ? (
                 <div className="space-y-4">
-                  {tasks.map((task, index) => (
-                    <div key={task.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
+                  {items.map((item, index) => (
+                    <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-sm transition-shadow">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h4 className="font-semibold text-gray-900">{task.title}</h4>
-                            {getPriorityBadge(task.priority)}
-                            {getStatusBadge(task.status)}
+                            <h4 className="font-semibold text-gray-900"> {stockItems.find(obj => obj.itemId === item.itemId)?.name || 'Unknown'}</h4>
                           </div>
-                          {task.description && (
-                            <p className="text-gray-600 text-sm mb-3">{task.description}</p>
-                          )}
-                          <div className="flex items-center space-x-4 text-sm text-gray-500">
-                            {task.assignedTo && (
-                              <div className="flex items-center">
-                                <User className="h-4 w-4 mr-1" />
-                                {task.assignedTo.split(' - ')[0]}
-                              </div>
-                            )}
-                            {task.dueDate && (
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1" />
-                                {new Date(task.dueDate).toLocaleDateString()}
-                              </div>
-                            )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h4 className="font-semibold text-gray-900">{item.quantity} {stockItems.find(obj => obj.itemId === item.itemId)?.unit.toUpperCase() || ''}</h4>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2 ml-4">
                           <button
-                            onClick={() => editTask(index)}
+                            onClick={() => editItem(index)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Edit Task"
                           >
@@ -637,7 +583,7 @@ useEffect(()=>{
                           <button
                             onClick={() => {
                               if (window.confirm('Are you sure you want to delete this task?')) {
-                                deleteTask(index);
+                                deleteItem(index);
                               }
                             }}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -656,13 +602,13 @@ useEffect(()=>{
               ) : (
                 <div className="text-center py-12 bg-gray-50 rounded-xl">
                   <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">No tasks added yet</h4>
-                  <p className="text-gray-600 mb-4">Break down your request into specific tasks to track progress better</p>
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">No Items added yet</h4>
+                  <p className="text-gray-600 mb-4">Add Task Items</p>
                   <button
-                    onClick={() => setShowTaskForm(true)}
+                    onClick={() => setShowItemForm(true)}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
-                    Add Your First Task
+                    Add Task Items
                   </button>
                 </div>
               )}

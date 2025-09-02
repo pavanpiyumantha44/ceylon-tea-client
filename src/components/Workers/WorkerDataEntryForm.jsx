@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { addPerson, getRoles } from "../../services/workerService";
 import { ToastContainer, toast } from 'react-toastify';
+import { validateWorkerEntryForm } from "../../utils/validations";
 
 const WorkerDataEntryForm = ({setReload}) => {
   const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ const WorkerDataEntryForm = ({setReload}) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = validateForm();
+    const errors = validateWorkerEntryForm(formData);
     if(errors.length>0){
       toast.error(errors[0], {
             position: 'top-center',
@@ -60,50 +61,6 @@ const WorkerDataEntryForm = ({setReload}) => {
     }
   }
   };
-  const validateForm = () => {
-      const errors = [];
-      
-      if (!formData.firstName) {
-        errors.push("Please Enter First Name");
-      }
-      if (!formData.lastName) {
-        errors.push("Please Enter Last Name");
-      }
-      if (!formData.roleId) {
-        errors.push("Please select a Role");
-      }
-      if (!formData.nicNumber) {
-        errors.push("Please Enter a NIC number");
-      }
-      if (formData.nicNumber) {
-        const nic = String(formData.nicNumber).trim();
-        const nicRegex = /^(\d{9}[vx]|\d{12})$/i;
-        if (!nicRegex.test(nic)) {
-          errors.push("NIC Number is invalid");
-        }
-      }
-      if (!formData.phone) {
-        errors.push("Please Enter a Phone number");
-      }
-      if (formData.phone) {
-        const mobileRegex = /^(?:\+94|0)7\d{8}$/;
-        if(!mobileRegex.test(formData.phone))
-          errors.push("Phone Number is invalid");
-      }
-      if (formData.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(!emailRegex.test(formData.email))
-          errors.push("Please Enter a valid email adress");
-      }
-       if (!formData.address) {
-        errors.push("Please Enter Address");
-      }
-      if (!formData.dob) {
-        errors.push("Please select DOB");
-      }
-      
-      return errors;
-    };
   const handleCancel = () => {
     setFormData({
       firstName: '',
@@ -185,7 +142,7 @@ const WorkerDataEntryForm = ({setReload}) => {
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  placeholder="e.g., W007"
+                  placeholder="e.g., Nimal"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />
@@ -200,7 +157,7 @@ const WorkerDataEntryForm = ({setReload}) => {
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  placeholder="e.g., John Doe"
+                  placeholder="e.g., Perera"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />
@@ -214,7 +171,7 @@ const WorkerDataEntryForm = ({setReload}) => {
                   name="nicNumber"
                   value={formData.nicNumber}
                   onChange={handleInputChange}
-                  placeholder="e.g., 99785786v"
+                  placeholder="e.g., 997857862v"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />

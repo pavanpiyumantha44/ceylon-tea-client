@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Leaf } from 'lucide-react';
-import axios from 'axios'
+import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../app/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { login } from '../services/authService';
-import { ClipLoader, PulseLoader } from "react-spinners";
+import { ClipLoader, PulseLoader } from 'react-spinners';
+import BG from '../../public/bg.jpg';
 
 export default function TeaFactoryLogin() {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   let [loading, setLoading] = useState(false);
@@ -17,85 +17,53 @@ export default function TeaFactoryLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    password: ''
+    password: '',
   });
 
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true)
-  try {
-    const response = await login(formData);
-
-    const { person, token } = response.data;
-    if (response.data.success && token && person) {
-      dispatch(setCredentials({ user: person, token }));
-      navigate('/dashboard');
-      setLoading(false)
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await login(formData);
+      const { person, token } = response.data;
+      if (response.data.success && token && person) {
+        dispatch(setCredentials({ user: person, token }));
+        navigate('/dashboard');
+        setLoading(false);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Login failed', {
+        style: {
+          backgroundColor: '#DC2626',
+          color: '#fff',
+        },
+        position: 'top-center',
+      });
+      setLoading(false);
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Login failed", {
-      style: {
-        backgroundColor: "#DC2626",
-        color: "#fff"
-      },
-      position: 'top-center',
-    });
-    setLoading(false)
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-white flex">
-       <ToastContainer autoClose={2000} />
-      {/* Left Side - Image */}
+      <ToastContainer autoClose={2000} />
+      {/* Left Side - Image with Title and Quote */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-400 to-green-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gray-600 bg-opacity-20"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-          <div className="mb-8">
-            <Leaf className="h-24 w-24 text-white opacity-90" />
+        <img src={BG} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-opacity-100 flex flex-col items-center justify-center text-white">
+          <div className="flex items-center mb-4">
+            <Leaf className="h-30 w-30 mr-2" />
+            <h1 className="text-8xl font-bold">Ceylon Tea</h1>
           </div>
-          <h1 className="text-4xl font-bold mb-4 text-center">
-            Ceylon Tea Factory
-          </h1>
-          <p className="text-xl mb-8 text-center opacity-90">
-            Premium Quality Tea Management
+          <p className="text-lg font-medium text-center max-w-md">
+            "Pure bliss in every sip – the timeless taste of Ceylon Tea."
           </p>
-          <div className="grid grid-cols-2 gap-6 text-center">
-            <div className="bg-white bg-opacity-20 rounded-lg p-4 backdrop-blur-sm">
-              <div className="text-2xl font-bold">500+</div>
-              <div className="text-sm opacity-80">Tea Varieties</div>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4 backdrop-blur-sm">
-              <div className="text-2xl font-bold">25+</div>
-              <div className="text-sm opacity-80">Years Experience</div>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4 backdrop-blur-sm">
-              <div className="text-2xl font-bold">100k+</div>
-              <div className="text-sm opacity-80">Kg Daily Production</div>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4 backdrop-blur-sm">
-              <div className="text-2xl font-bold">50+</div>
-              <div className="text-sm opacity-80">Countries Served</div>
-            </div>
-          </div>
-        </div>
-        {/* Decorative tea leaves */}
-        <div className="absolute top-10 left-10 opacity-20">
-          <Leaf className="h-16 w-16 text-white transform rotate-12" />
-        </div>
-        <div className="absolute bottom-10 right-10 opacity-20">
-          <Leaf className="h-20 w-20 text-white transform -rotate-12" />
-        </div>
-        <div className="absolute top-1/3 right-20 opacity-10">
-          <Leaf className="h-12 w-12 text-white transform rotate-45" />
         </div>
       </div>
 
@@ -197,17 +165,20 @@ export default function TeaFactoryLogin() {
                   onClick={handleSubmit}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:scale-105"
                 >
-                  {loading? <PulseLoader
+                  {loading ? (
+                    <PulseLoader
                       color="#ffffff"
                       loading={loading}
                       cssOverride={{
-                        display: "block",
-                        margin: "0 auto",
-                        borderColor: "#c7c7c7",
+                        display: 'block',
+                        margin: '0 auto',
+                        borderColor: '#c7c7c7',
                       }}
                       size={10}
-                    /> : <span>Sign In</span>
-                  }
+                    />
+                  ) : (
+                    <span>Sign In</span>
+                  )}
                 </button>
               </div>
             </div>

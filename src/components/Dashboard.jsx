@@ -70,7 +70,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -371,7 +371,7 @@ const Dashboard = () => {
                   onClick={toggleUserDropdown}
                   className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors duration-200"
                 >
-                  <span className="text-white text-sm font-medium">A</span>
+                  <span className="text-white text-sm font-medium">{user?.role?.substring(0, 1)}</span>
                 </button>
                 
                 {/* Dropdown Menu */}

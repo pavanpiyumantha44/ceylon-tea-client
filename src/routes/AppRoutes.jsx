@@ -18,6 +18,10 @@ import CreateTask from '../components/Task/CreateTask';
 import EditProduct from '../components/Inventory/EditProduct';
 import StockTransactions from '../components/Inventory/StockTransactions';
 import TeaPlucking from '../components/Production/TeaPlukcing';
+import Payroll from '../components/Payroll/Salary';
+import VehicleManagement from '../components/Vehicles/Vehicles';
+import ReportsManagement from '../components/Reports/ReportsManagement';
+import EditTask from '../components/Task/EditTask';
 
 const AppRoutes = () => {
   return (
@@ -36,6 +40,7 @@ const AppRoutes = () => {
       >
         <Route index element={<Summary />} />
         <Route path="production" element={<Production />} />
+        <Route path="reports" element={<ReportsManagement />} />
         <Route path="teaPlucking" element={<TeaPlucking />} />
         <Route path="inventory" element={<Inventory/>}/>
         <Route path="solution" element={<Solution />} />
@@ -46,10 +51,13 @@ const AppRoutes = () => {
         <Route path="attendance" element={<Attendance/>}/>
         <Route path="place" element={<Place/>}/>
         <Route path="viewplace/:id" element={<ViewPlace/>}/>
+        <Route path="payroll" element={<Payroll/>}/>
         <Route path="teams" element={<Teams/>} />
         <Route path="viewteam/:id" element={<ViewTeam/>}/>
         <Route path="newTask" element={<CreateTask/>}/>
         <Route path="tasks" element={<Tasks/>}/>
+        <Route path="editTask/:id" element={<EditTask/>}/>
+        <Route path="vehicles" element={<VehicleManagement/>}/>
       </Route>
 
       {/* Catch-all */}
